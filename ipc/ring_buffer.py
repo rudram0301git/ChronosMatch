@@ -4,6 +4,7 @@ Memory-mapped ring buffer for ChronosMatch.
 
 import mmap
 import os
+import struct
 
 from .constants import (
     BUFFER_CAPACITY,
@@ -44,4 +45,34 @@ class RingBuffer:
         self.memory = mmap.mmap(
             self.file.fileno(),
             self.total_size,
+        )
+
+    def _get_write_position(self):
+        return struct.unpack_from(
+            "<Q",
+            self.memory,
+            0,
+        )[0]
+
+    def _get_read_position(self):
+        return struct.unpack_from(
+            "<Q",
+            self.memory,
+            8,
+        )[0]
+
+    def _set_write_position(self, position):
+        struct.pack_into(
+            "<Q",
+            self.memory,
+            0,
+            position,
+        )
+
+    def _set_read_position(self, position):
+        struct.pack_into(
+            "<Q",
+            self.memory,
+            8,
+            position,
         )
