@@ -83,6 +83,43 @@ class RingBuffer:
     def is_full(self):
         write_position = self._get_write_position()
 
-        next_position = (write_position + 1) % self.capacity
+        next_position = (
+            write_position + 1
+        ) % self.capacity
 
         return next_position == self._get_read_position()
+
+    def write_order(
+        self,
+        side,
+        price,
+        quantity,
+        timestamp,
+    ):
+        if self.is_full():
+            return False
+
+        write_position = self._get_write_position()
+
+        offset = HEADER_SIZE + (
+            write_position * ORDER_SIZE
+        )
+
+        struct.pack_into(
+            "<QcdIQ",
+            self.memory,
+            offset,
+            write_position,
+            side,
+            price,
+            quantity,
+            timestamp,
+        )
+
+        next_position = (
+            write_position + 1
+        ) % self.capacity
+
+        self._set_write_position(next_position)
+
+        return True
