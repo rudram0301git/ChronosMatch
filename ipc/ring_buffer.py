@@ -76,3 +76,13 @@ class RingBuffer:
             8,
             position,
         )
+
+    def is_empty(self):
+        return self._get_write_position() == self._get_read_position()
+
+    def is_full(self):
+        write_position = self._get_write_position()
+
+        next_position = (write_position + 1) % self.capacity
+
+        return next_position == self._get_read_position()
