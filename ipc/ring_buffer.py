@@ -11,6 +11,7 @@ from .constants import (
     HEADER_SIZE,
     ORDER_SIZE,
     BUFFER_FILE,
+    ORDER_FORMAT,
 )
 
 
@@ -78,7 +79,10 @@ class RingBuffer:
         )
 
     def is_empty(self):
-        return self._get_write_position() == self._get_read_position()
+        return (
+            self._get_write_position()
+            == self._get_read_position()
+        )
 
     def is_full(self):
         write_position = self._get_write_position()
@@ -87,7 +91,10 @@ class RingBuffer:
             write_position + 1
         ) % self.capacity
 
-        return next_position == self._get_read_position()
+        return (
+            next_position
+            == self._get_read_position()
+        )
 
     def write_order(
         self,
@@ -106,7 +113,7 @@ class RingBuffer:
         )
 
         struct.pack_into(
-            "<QcdIQ",
+            ORDER_FORMAT,
             self.memory,
             offset,
             write_position,
@@ -123,3 +130,46 @@ class RingBuffer:
         self._set_write_position(next_position)
 
         return True
+
+    def read_order(self):
+        if self.is_empty():
+            return None
+
+        read_position = self._get_read_position()
+
+        offset = HEADER_SIZE + (
+            read_position * ORDER_SIZE
+        )
+
+        order_id, side, price, quantity, timestamp = (
+            struct.unpack_from(
+                ORDER_FORMAT,
+                self.memory,
+                offset,
+            )
+        )
+
+        next_position = (
+            read_position + 1
+        ) % self.capacity
+
+        self._set_read_position(next_position)
+
+        return {
+            "order_id": order_id,
+            "side": side,
+            "price": price,
+            "quantity": quantity,
+            "timestamp": timestamp,
+        }
+
+    def close(self):
+        self.memory.flush()
+        self.memory.close()
+        self.file.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
