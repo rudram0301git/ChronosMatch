@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ChronosMatch Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .header p {
+            margin-top: 8px;
+            color: #cbd5e1;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .value {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .unit {
+            font-size: 14px;
+            color: #777;
+        }
+
+        .status {
+            margin-top: 35px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .status span {
+            font-weight: bold;
+        }
+
+        @media (max-width: 800px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>CHRONOSMATCH</h1>
+        <p>Zero-Copy High-Frequency Trading Engine</p>
+    </div>
+
+    <div class="container">
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Orders Processed</h3>
+                <div class="value">{{ orders_processed }}</div>
+                <div class="unit">orders</div>
+            </div>
+
+            <div class="card">
+                <h3>Average Latency</h3>
+                <div class="value">{{ average_latency }}</div>
+                <div class="unit">microseconds</div>
+            </div>
+
+            <div class="card">
+                <h3>Minimum Latency</h3>
+                <div class="value">{{ minimum_latency }}</div>
+                <div class="unit">microseconds</div>
+            </div>
+
+            <div class="card">
+                <h3>Maximum Latency</h3>
+                <div class="value">{{ maximum_latency }}</div>
+                <div class="unit">microseconds</div>
+            </div>
+
+        </div>
+
+        <div class="status">
+            <h2>System Status</h2>
+            <p>ChronosMatch Engine: <span>Running</span></p>
+            <p>IPC Ring Buffer: <span>Active</span></p>
+            <p>Integration Tests: <span>Passed</span></p>
+        </div>
+
+    </div>
+
+</body>
+</html>

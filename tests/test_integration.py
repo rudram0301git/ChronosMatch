@@ -2,12 +2,14 @@ import os
 import time
 
 from ipc.ring_buffer import RingBuffer
+from simulator.market_simulator import MarketSimulator
+from engine.order_book import OrderBook
 from dashboard.latency_monitor import LatencyMonitor
 
 
 def run_integration_test():
 
-    file_path = "data/integration_test.mmap"
+    file_path = "data/full_integration.mmap"
 
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -17,32 +19,39 @@ def run_integration_test():
         100
     )
 
+    simulator = MarketSimulator(
+        buffer,
+        orders_per_second=0
+    )
+
+    engine = OrderBook()
+
     monitor = LatencyMonitor()
 
-    total_orders = 90
+    orders = 50
 
-    for i in range(total_orders):
+    written = simulator.run(orders)
 
-        timestamp = time.time_ns()
+    print("Orders generated:", written)
 
-        written = buffer.write_order(
-            b"B",
-            100.0 + (i * 0.01),
-            i + 1,
-            timestamp,
-        )
+    processed = 0
 
-        assert written is True
-
-    for _ in range(total_orders):
+    while not buffer.is_empty():
 
         start = time.perf_counter_ns()
 
         order = buffer.read_order()
 
-        end = time.perf_counter_ns()
+        if order is None:
+            break
 
-        assert order is not None
+        engine.add_order(
+            order["side"],
+            order["price"],
+            order["quantity"]
+        )
+
+        end = time.perf_counter_ns()
 
         latency = (
             end - start
@@ -50,12 +59,19 @@ def run_integration_test():
 
         monitor.record(latency)
 
+        processed += 1
+
     buffer.close()
+
+    print("Orders processed:", processed)
+    print("Trades:", engine.get_trade_count())
 
     monitor.display()
 
-    print("\nIntegration test passed.")
-    print(f"Orders processed: {monitor.orders}")
+    assert written == orders
+    assert processed == orders
+
+    print("\nFull integration test passed.")
 
 
 if __name__ == "__main__":
